@@ -40,6 +40,7 @@
                             Swal.fire({
                                 title: "Başarılı!",
                                 text: "Giriş başarılı, yönlendiriliyorsunuz...",
+                                timer: 1000,
                                 icon: "success",
                                 confirmButtonText: "Tamam"
                             }).then(() => {
@@ -64,7 +65,6 @@
                             title: "Hata!",
                             text: errorMessage,
                             icon: "error",
-                            confirmButtonText: "Tamam"
                         });
                     }
                 });

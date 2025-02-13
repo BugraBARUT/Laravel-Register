@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
+
 
 class AuthController extends Controller
 {
@@ -37,32 +38,27 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         try {
-            $request->validate([
-                'email' => 'required|email',
-                'password' => 'required',
+
+            $credentials = $request->validate([
+                'email' => ['required', 'email'],
+                'password' => ['required'],
             ]);
 
-            $user = User::where('email', $request->email)->first();
+            if (Auth::attempt($credentials)) {
+                $request->session()->regenerate();
 
-            if (!$user || !Hash::check($request->password, $user->password)) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'E-posta veya şifre hatalı!'
-                ], 401);
+                return redirect()->intended('dashboard');
             }
-
-            $token = $user->createToken('token-name')->plainTextToken;
 
             return response()->json([
                 'success' => true,
                 'message' => 'Giriş başarılı!',
-                'token' => $token,
                 'redirect' => route('dashboard') // Yönlendirilecek sayfa
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error' => 'Bir hata oluştu. Lütfen tekrar deneyin.'
+                'error' => $e->getMessage()
             ], 500);
         }
     }
