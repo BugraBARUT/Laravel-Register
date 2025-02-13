@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kayıt Ol</title>
+    <title>Giriş Yap</title>
     <link rel="stylesheet" href="{{ asset('css/register.style.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -13,45 +13,47 @@
 <body>
 
     <div class="form-container">
-        <h2>Kayıt Ol</h2>
-        <form id="register-form">
+        <h2>Giriş Yap</h2>
+        <form id="login-form">
             @csrf
             <input type="email" name="email" id="email" placeholder="E-posta" required>
             <input type="password" name="password" id="password" placeholder="Şifre" required>
-            <input type="password" name="password_confirmation" id="password_confirmation" placeholder="Şifre Tekrar"
-                required>
-            <button type="submit">Kayıt Ol</button>
+            <button type="submit">Giriş Yap</button>
         </form>
     </div>
 
     <script>
         $(document).ready(function() {
-            $('#register-form').on('submit', function(e) {
+            $('#login-form').on('submit', function(e) {
                 e.preventDefault();
 
                 let formData = new FormData(this);
 
                 $.ajax({
-                    url: "{{ route('register') }}",
+                    url: "{{ route('login') }}",
                     type: "POST",
                     data: formData,
                     contentType: false,
                     processData: false,
                     success: function(response) {
-                        Swal.fire({
-                            title: "Başarılı!",
-                            text: "Kayıt işlemi başarıyla tamamlandı.",
-                            icon: "success",
-                            confirmButtonText: "Tamam"
-                        }).then(() => {
-                            location
-                                .reload(); // Başarılı kayıt sonrası sayfayı yenileyebiliriz.
-                        });
+                        if (response.success) {
+                            Swal.fire({
+                                title: "Başarılı!",
+                                text: "Giriş başarılı, yönlendiriliyorsunuz...",
+                                icon: "success",
+                                confirmButtonText: "Tamam"
+                            }).then(() => {
+                                window.location.href = response
+                                    .redirect; // Ana sayfaya yönlendirme
+                            });
+                        }
                     },
                     error: function(xhr) {
                         let errorMessage = "Bilinmeyen bir hata oluştu.";
 
-                        if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        if (xhr.status === 401) {
+                            errorMessage = "E-posta veya şifre hatalı!";
+                        } else if (xhr.responseJSON && xhr.responseJSON.errors) {
                             errorMessage = "";
                             $.each(xhr.responseJSON.errors, function(key, value) {
                                 errorMessage += value + "\n";
